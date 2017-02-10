@@ -246,7 +246,6 @@ public class Network {
 			//oldweight+newweight=hiddenweight
 			double newWeight=Hidden.get(noOfHiddenlayers-1)
 					.list.get(i).OutputWeight+deltaHiddenWeight;
-			
 			//set new weight with mommentum
 			Hidden.get(noOfHiddenlayers-1)
 			.list.get(i).OutputWeight=newWeight+(deltaHiddenWeight*mommentum);

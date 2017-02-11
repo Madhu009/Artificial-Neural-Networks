@@ -19,8 +19,8 @@ public class Network {
 	int inputLayerSize;int hiddenLayerSize;int noOfHiddenlayers;
 	Matrix input;
 	Matrix output;
-	double learningRate=0.9f;
-	private double mommentum=0.1f;
+	double learningRate=0.9;
+	private double mommentum=0.7;
 	public Network(int inputLayerSize,int hiddenLayerSize,int noOfHiddenlayers)
 	{
 		this.inputLayerSize=inputLayerSize;
@@ -133,23 +133,6 @@ public class Network {
 		    return new Matrix(0, 0);
 		}
 	
-	
-	public static void main(String args[])
-	{
-		Network net=new Network(2,3,2);
-		for(int i=0;i<net.input.getRowDimension();i++)
-		{
-			double[] input=new double[net.input.getColumnDimension()];
-			for(int j=0;j<input.length;j++)
-			{
-				input[j]=net.input.get(i, j);
-			}
-			net.forwardPropagation(input);
-		}
-		
-		
-	}
-	
 	//pass the training example to the network
 	public void forwardPropagation(double[] input)
 	{
@@ -168,10 +151,10 @@ public class Network {
 			//multiply weghts and inputs
 			for(int i=0;i<inputLayerSize;i++)
 			{
-				weightsResult+=input[i]*inputLayer.get(i+1).weights[j];
+				weightsResult=weightsResult+input[i]*inputLayer.get(i+1).weights[j];
 			}
 			//add bias weight cause value=1
-			weightsResult+=inputLayer.get(0).weights[j];
+			weightsResult=weightsResult+inputLayer.get(0).output*inputLayer.get(0).weights[j];
 			
 			//store the value in hidden neuron j in the list 
 			Hidden.get(0).list.get(j+1).value=weightsResult;
@@ -196,7 +179,7 @@ public class Network {
 						outputHiddenResult+=Hidden.get(layerlevel).list.get(j+1).value*Hidden.get(layerlevel).list.get(j+1).weights[i];
 					}
 					//add bias of hidden layer i
-					outputHiddenResult+=Hidden.get(layerlevel).list.get(0).value*Hidden.get(layerlevel).list.get(0).weights[i];
+					outputHiddenResult=outputHiddenResult+Hidden.get(layerlevel).list.get(0).value*Hidden.get(layerlevel).list.get(0).weights[i];
 				
 				//store the result in next layer(i+1) neuron(i) 
 				Hidden.get(layerlevel+1).list.get(i+1).value=outputHiddenResult;
@@ -208,13 +191,13 @@ public class Network {
 		//calculate last hidden layer to output values
 		double outputValue=0;
 		
-		for(int i=0;i<hiddenLayerSize;i++)
+		for(int i=0;i<=hiddenLayerSize;i++)
 		{
 			//calculate outputWeight(length is 1) * value
-			outputValue+=Hidden.get(noOfHiddenlayers-1).list.get(i+1).value*Hidden.get(noOfHiddenlayers-1).list.get(i+1).OutputWeight;
+			outputValue+=Hidden.get(noOfHiddenlayers-1).list.get(i).output*Hidden.get(noOfHiddenlayers-1).list.get(i).OutputWeight;
 		}
 		//add bias
-		outputValue+=Hidden.get(noOfHiddenlayers-1).list.get(0).value*Hidden.get(noOfHiddenlayers-1).list.get(0).OutputWeight;
+		//outputValue+=-1*Hidden.get(noOfHiddenlayers-1).list.get(0).value*Hidden.get(noOfHiddenlayers-1).list.get(0).OutputWeight;
 		
 		//store the value in output neuron
 		outputNeuron.value=outputValue;
@@ -226,14 +209,15 @@ public class Network {
 	public void backPropagation(double expected)
 	{
 		double error=0;
-		error=expected-outputNeuron.output-expected;
+		error=expected-outputNeuron.output;
 		
 		//calculate output neuron delta output
 		//so first sigmoid inverse of output layer
-		double sigmoidInverse=(1-getSigmoid(outputNeuron.value))*getSigmoid(outputNeuron.output);
+		double sigmoidInverse=(1-outputNeuron.output)*outputNeuron.output;
 		double deltaOutputValue=sigmoidInverse*error;
 		//calculate hiddenSum for every neuron
-		double[] hiddenValue=new double[hiddenLayerSize+1];
+		double[] hiddenValue=new double[hiddenLayerSize];
+		
 		//calculate weights for last hidden layer
 		for(int i=0;i<=hiddenLayerSize;i++)
 		{
@@ -249,17 +233,43 @@ public class Network {
 			
 			//set new weight with mommentum
 			Hidden.get(noOfHiddenlayers-1)
-			.list.get(i).OutputWeight=newWeight+(deltaHiddenWeight*mommentum);
+			.list.get(i).OutputWeight=newWeight+(Hidden.get(noOfHiddenlayers-1)
+					.list.get(i).prevDeltaValue1*mommentum);
+			
+			//set prevdelta value
+			Hidden.get(noOfHiddenlayers-1)
+			.list.get(i).prevDeltaValue1=deltaHiddenWeight;
 			
 			//hiddenweight* outputLayeroutput*sigmoidInverseHiddenValue=
-			//hiddenValue
+			//hiddenValue excudling bias
+			if(i!=0)
+			{
+			double sigInverseHiddenValue=Hidden.get(noOfHiddenlayers-1)
+					.list.get(i).output * (1-Hidden.get(noOfHiddenlayers-1)
+					.list.get(i).output);
 			
-			double sigInverseHiddenValue=getSigmoid(Hidden.get(noOfHiddenlayers-1)
-					.list.get(i).value) * (1-getSigmoid(Hidden.get(noOfHiddenlayers-1)
-					.list.get(i).value));
-			
-			hiddenValue[i]=Hidden.get(noOfHiddenlayers-1)
+			hiddenValue[i-1]=Hidden.get(noOfHiddenlayers-1)
 					.list.get(i).OutputWeight*deltaOutputValue*sigInverseHiddenValue;
+			}
+		}
+		
+		//calculate weights for the input layer
+		for(int i=0;i<=inputLayerSize;i++)
+		{
+			for(int j=0;j<hiddenLayerSize;j++)
+			{
+				double deltaInputweight=0;
+				//deltaWeight=learning*hiddensum*S(input sum)
+				deltaInputweight=learningRate*hiddenValue[j]*
+						inputLayer.get(i).output;
+				//new weight
+				double newWeight=deltaInputweight+inputLayer.get(i).weights[j];
+				
+				//set new weight
+				inputLayer.get(i).weights[j]=newWeight+(inputLayer.get(i).prevDeltaValue[j]*mommentum);
+				
+				inputLayer.get(i).prevDeltaValue[j]=deltaInputweight;
+			}
 		}
 		
 		
@@ -269,6 +279,36 @@ public class Network {
 	{
 		 return 1.0/(1+Math.exp(-hyp));
 	}
+	
+	public static void main(String args[])
+	{
+		Network net=new Network(2,3,1);
+		double error=1;
+		
+		for (int ep = 0; ep < 100000 && error > 0.001; ep++) {
+            error = 0;
+            
+            for(int i=0;i<net.input.getRowDimension();i++)
+    		{
+    			double[] input=new double[net.input.getColumnDimension()];
+    			for(int j=0;j<input.length;j++)
+    			{
+    				input[j]=net.input.get(i, j);
+    			}
+    			net.forwardPropagation(input);
+    			double output=net.outputNeuron.output;
+    			double expected=net.output.get(i, 0);
+    			
+    			  double err = Math.pow(expected-output,2);
+                  error += err;
+                  
+    			net.backPropagation(expected);
+    		}
+            System.out.println(ep);
+            System.out.println(error);
+		}
+	}
+	
 	
 	
 	

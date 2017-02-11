@@ -19,8 +19,8 @@ public class Neuron {
 	double OutputWeight=0;
 	
 	//change value(2nd time onwards)
-	double prevDeltaValue=0;
-	
+	double[] prevDeltaValue;
+	double prevDeltaValue1;
 	Random r=new Random();
 	
 	
@@ -34,23 +34,26 @@ public class Neuron {
 		if(weightLength>1)
 		{
 			weights=new double[weightLength];
+			prevDeltaValue=new double[weightLength];
 			for(int i=0;i<weightLength;i++)
 			{
-				weights[i]=0.0+(1.0-0.0)*r.nextDouble();
+				prevDeltaValue[i]=0;
+				weights[i]=(r.nextDouble() * 2 - 1);
 			}
 		}
 		//false-->Random 1 weight
 		else if(weightLength==1)
 		{
-			OutputWeight=0.0+(1.0-0.0)*r.nextDouble();
+			prevDeltaValue1=0;
+			OutputWeight=(r.nextDouble() * 2 - 1);
 		}
 		
 		//check if the node is bias 
 		//true-->
 		if(bias==true)
 		{
-			this.value=1;
-			this.output=1;
+			this.value=-1;
+			this.output=-1;
 		}
 		
 	}

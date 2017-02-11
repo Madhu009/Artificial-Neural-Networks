@@ -53,7 +53,7 @@ public class Neuron {
 		if(bias==true)
 		{
 			this.value=-1;
-			this.output=-1;
+			this.output=0;
 		}
 		
 	}

@@ -19,8 +19,8 @@ public class Network {
 	int inputLayerSize;int hiddenLayerSize;int noOfHiddenlayers;
 	Matrix input;
 	Matrix output;
-	double learningRate=0.9;
-	private double mommentum=0.7;
+	double learningRate=0.9f;
+	private double mommentum=0.7f;
 	public Network(int inputLayerSize,int hiddenLayerSize,int noOfHiddenlayers)
 	{
 		this.inputLayerSize=inputLayerSize;
@@ -151,10 +151,12 @@ public class Network {
 			//multiply weghts and inputs
 			for(int i=0;i<inputLayerSize;i++)
 			{
-				weightsResult=weightsResult+input[i]*inputLayer.get(i+1).weights[j];
+				double weight=inputLayer.get(i+1).weights[j];
+				weightsResult=weightsResult+(input[i]*weight);
 			}
 			//add bias weight cause value=1
-			weightsResult=weightsResult+inputLayer.get(0).output*inputLayer.get(0).weights[j];
+			double biasWeight=inputLayer.get(0).weights[j];
+			weightsResult=weightsResult+inputLayer.get(0).value*biasWeight;
 			
 			//store the value in hidden neuron j in the list 
 			Hidden.get(0).list.get(j+1).value=weightsResult;
@@ -191,13 +193,13 @@ public class Network {
 		//calculate last hidden layer to output values
 		double outputValue=0;
 		
-		for(int i=0;i<=hiddenLayerSize;i++)
+		for(int i=0;i<hiddenLayerSize;i++)
 		{
 			//calculate outputWeight(length is 1) * value
-			outputValue+=Hidden.get(noOfHiddenlayers-1).list.get(i).output*Hidden.get(noOfHiddenlayers-1).list.get(i).OutputWeight;
+			outputValue+=Hidden.get(noOfHiddenlayers-1).list.get(i+1).output*Hidden.get(noOfHiddenlayers-1).list.get(i+1).OutputWeight;
 		}
 		//add bias
-		//outputValue+=-1*Hidden.get(noOfHiddenlayers-1).list.get(0).value*Hidden.get(noOfHiddenlayers-1).list.get(0).OutputWeight;
+		outputValue+=Hidden.get(noOfHiddenlayers-1).list.get(0).value*Hidden.get(noOfHiddenlayers-1).list.get(0).OutputWeight;
 		
 		//store the value in output neuron
 		outputNeuron.value=outputValue;
@@ -266,7 +268,7 @@ public class Network {
 				double newWeight=deltaInputweight+inputLayer.get(i).weights[j];
 				
 				//set new weight
-				inputLayer.get(i).weights[j]=newWeight+(inputLayer.get(i).prevDeltaValue[j]*mommentum);
+				inputLayer.get(i).weights[j]=newWeight+mommentum*inputLayer.get(i).prevDeltaValue[j];
 				
 				inputLayer.get(i).prevDeltaValue[j]=deltaInputweight;
 			}
@@ -285,7 +287,7 @@ public class Network {
 		Network net=new Network(2,3,1);
 		double error=1;
 		
-		for (int ep = 0; ep < 100000 && error > 0.001; ep++) {
+		for (int ep = 0; ep < 1000000 && error > 0.001; ep++) {
             error = 0;
             
             for(int i=0;i<net.input.getRowDimension();i++)

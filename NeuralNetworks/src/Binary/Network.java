@@ -325,6 +325,7 @@ public class Network {
     			{
     				input[j]=net.input.get(i, j);
     			}
+    			net.setOutput(input);
     			net.forwardPropagation(input);
     			double output=net.outputNeuron.output;
     			double expected=net.output.get(i, 0);
@@ -334,9 +335,20 @@ public class Network {
                   
     			net.backPropagation(expected);
     		}
+            if(ep%100==0)
+            {
+            	System.out.println("Epoch : "+ep);
+            }
             System.out.println(ep);
             System.out.println(error);
 		}
+	}
+
+	private void setOutput(double[] input2) {
+		
+		inputLayer.get(1).output=input2[0];
+		
+		inputLayer.get(2).output=input2[1];
 	}
 	
 	

@@ -218,7 +218,7 @@ public class Network {
 		double sigmoidInverse=(1-outputNeuron.output)*outputNeuron.output;
 		double deltaOutputValue=sigmoidInverse*error;
 		//calculate hiddenSum for every neuron
-		double[] hiddenValue=new double[hiddenLayerSize];
+		double[] hiddenValue18=new double[hiddenLayerSize];
 		
 		//calculate weights for last hidden layer
 		for(int i=0;i<=hiddenLayerSize;i++)
@@ -244,7 +244,7 @@ public class Network {
 			
 			//hiddenweight* outputLayeroutput*sigmoidInverseHiddenValue=
 			//hiddenValue excudling bias
-			if(i!=0)
+		/*	if(i!=0)
 			{
 			double sigInverseHiddenValue=Hidden.get(noOfHiddenlayers-1)
 					.list.get(i).output * (1-Hidden.get(noOfHiddenlayers-1)
@@ -252,28 +252,56 @@ public class Network {
 			
 			hiddenValue[i-1]=Hidden.get(noOfHiddenlayers-1)
 					.list.get(i).OutputWeight*deltaOutputValue*sigInverseHiddenValue;
-			}
+			}*/
 		}
+		/*double[] hiddenValue1=new double[hiddenLayerSize];
+		
+		for(int i=1;i<=hiddenLayerSize;i++)
+		{
+			double sigInverseHiddenValue=Hidden.get(noOfHiddenlayers-1)
+					.list.get(i).output * (1-Hidden.get(noOfHiddenlayers-1)
+					.list.get(i).output);
+			hiddenValue1[i-1]=Hidden.get(noOfHiddenlayers-1)
+					.list.get(i).OutputWeight*deltaOutputValue*sigInverseHiddenValue;
+			
+		}*/
 		
 		//calculate weights for the input layer
-		for(int i=0;i<=inputLayerSize;i++)
+		for(int i=1;i<=hiddenLayerSize;i++)
 		{
-			for(int j=0;j<hiddenLayerSize;j++)
+			for(int j=0;j<=inputLayerSize;j++)
 			{
-				double deltaInputweight=0;
+				 double deltaInputweight=1;
 				//deltaWeight=learning*hiddensum*S(input sum)
-				deltaInputweight=learningRate*hiddenValue[j]*
-						inputLayer.get(i).output;
+				//deltaInputweight=learningRate*hiddenValue1[j]*
+					//	inputLayer.get(i).output;
+				
+				//new code
+				double sumKoutputs = 0;
+				sumKoutputs=deltaOutputValue*Hidden.get(noOfHiddenlayers-1)
+						.list.get(i).OutputWeight;
+						
+				double sigInverseHiddenValue=Hidden.get(noOfHiddenlayers-1)
+						.list.get(i).output * (1-Hidden.get(noOfHiddenlayers-1)
+						.list.get(i).output);
+				
+				double partialDerivative=inputLayer.get(j).output*sigInverseHiddenValue*
+						sumKoutputs;
+						
+				deltaInputweight=learningRate*partialDerivative;
+				
+				
+				
 				//new weight
-				double newWeight=deltaInputweight+inputLayer.get(i).weights[j];
-				
+				double newWeight=deltaInputweight+inputLayer.get(j).weights[i-1];
+			
 				//set new weight
-				inputLayer.get(i).weights[j]=newWeight+mommentum*inputLayer.get(i).prevDeltaValue[j];
+				inputLayer.get(j).weights[i-1]=newWeight+mommentum*inputLayer.get(j).prevDeltaValue[i-1];
 				
-				inputLayer.get(i).prevDeltaValue[j]=deltaInputweight;
+				inputLayer.get(j).prevDeltaValue[i-1]=deltaInputweight;
 			}
 		}
-		
+	
 		
 	}
 	

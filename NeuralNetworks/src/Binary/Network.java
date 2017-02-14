@@ -323,6 +323,11 @@ public class Network {
             System.out.println(ep);
             System.out.println(error);
 		}
+		
+		double input[]=new double[2];
+		input[0]=1;
+		input[1]=1;
+		net.predict(input);
 	}
 
 	private void setOutput(double[] input2) {
@@ -332,7 +337,10 @@ public class Network {
 		inputLayer.get(2).output=input2[1];
 	}
 	
-	
-	
+	public void predict(double input[])
+	{
+		forwardPropagation(input);
+		System.out.println(outputNeuron.output);
+	}
 	
 }

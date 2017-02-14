@@ -242,51 +242,32 @@ public class Network {
 			Hidden.get(noOfHiddenlayers-1)
 			.list.get(i).prevDeltaValue1=deltaHiddenWeight;
 			
-			//hiddenweight* outputLayeroutput*sigmoidInverseHiddenValue=
-			//hiddenValue excudling bias
-		/*	if(i!=0)
-			{
-			double sigInverseHiddenValue=Hidden.get(noOfHiddenlayers-1)
-					.list.get(i).output * (1-Hidden.get(noOfHiddenlayers-1)
-					.list.get(i).output);
-			
-			hiddenValue[i-1]=Hidden.get(noOfHiddenlayers-1)
-					.list.get(i).OutputWeight*deltaOutputValue*sigInverseHiddenValue;
-			}*/
+		
 		}
-		/*double[] hiddenValue1=new double[hiddenLayerSize];
-		
-		for(int i=1;i<=hiddenLayerSize;i++)
-		{
-			double sigInverseHiddenValue=Hidden.get(noOfHiddenlayers-1)
-					.list.get(i).output * (1-Hidden.get(noOfHiddenlayers-1)
-					.list.get(i).output);
-			hiddenValue1[i-1]=Hidden.get(noOfHiddenlayers-1)
-					.list.get(i).OutputWeight*deltaOutputValue*sigInverseHiddenValue;
-			
-		}*/
-		
+
 		//calculate weights for the input layer
 		for(int i=1;i<=hiddenLayerSize;i++)
 		{
 			for(int j=0;j<=inputLayerSize;j++)
 			{
 				 double deltaInputweight=1;
-				//deltaWeight=learning*hiddensum*S(input sum)
-				//deltaInputweight=learningRate*hiddenValue1[j]*
-					//	inputLayer.get(i).output;
 				
-				//new code
-				double sumKoutputs = 0;
-				sumKoutputs=deltaOutputValue*Hidden.get(noOfHiddenlayers-1)
+				//calculate Hidden sum 
+					//hiddenweight* outputLayeroutput*sigmoidInverseHiddenValue=
+					//hiddenValue excudling bias
+				
+				double sumOutput = 0;
+				sumOutput=deltaOutputValue*Hidden.get(noOfHiddenlayers-1)
 						.list.get(i).OutputWeight;
 						
 				double sigInverseHiddenValue=Hidden.get(noOfHiddenlayers-1)
 						.list.get(i).output * (1-Hidden.get(noOfHiddenlayers-1)
 						.list.get(i).output);
 				
+				
+				////deltaWeight=learning*hiddensum*S(input sum)
 				double partialDerivative=inputLayer.get(j).output*sigInverseHiddenValue*
-						sumKoutputs;
+						sumOutput;
 						
 				deltaInputweight=learningRate*partialDerivative;
 				
@@ -312,10 +293,10 @@ public class Network {
 	
 	public static void main(String args[])
 	{
-		Network net=new Network(2,3,1);
+		Network net=new Network(2,6,1);
 		double error=1;
 		
-		for (int ep = 0; ep < 1000000 && error > 0.001; ep++) {
+		for (int ep = 0; ep < 100000 && error > 0.001; ep++) {
             error = 0;
             
             for(int i=0;i<net.input.getRowDimension();i++)
